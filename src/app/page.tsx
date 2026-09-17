@@ -90,7 +90,7 @@ export default function LandingPage() {
       <Navbar />
 
       {/* HERO SECTION */}
-      <section id="hero" className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden bg-radial-gradient">
+      <section id="hero" className="relative pt-36 sm:pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden bg-radial-gradient">
         {/* Glow ambient lights */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-cyan-500/10 blur-[130px] rounded-full pointer-events-none" />
         <div className="absolute top-1/3 right-10 w-[400px] h-[300px] bg-purple-500/10 blur-[130px] rounded-full pointer-events-none" />
