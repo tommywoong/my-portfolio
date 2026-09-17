@@ -280,6 +280,59 @@ export default function AdminPage() {
     }));
   };
 
+  const handleExportData = () => {
+    const backup = {
+      projects,
+      posts,
+      siteSettings,
+      skillCategories,
+      version: 'portfolio_v4_backup',
+      exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `portfolio-data-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    notifySuccess('Đã xuất file sao lưu dữ liệu thành công!');
+  };
+
+  const handleImportData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const content = event.target?.result as string;
+        const data = JSON.parse(content);
+        if (data.projects && Array.isArray(data.projects)) {
+          for (const proj of data.projects) {
+            await saveProjectService(proj);
+          }
+        }
+        if (data.posts && Array.isArray(data.posts)) {
+          for (const post of data.posts) {
+            await savePostService(post);
+          }
+        }
+        if (data.siteSettings) {
+          await saveSiteSettingsService(data.siteSettings);
+        }
+        if (data.skillCategories && Array.isArray(data.skillCategories)) {
+          await saveSkillCategoriesService(data.skillCategories);
+        }
+        await loadData();
+        notifySuccess('Đã nhập và đồng bộ toàn bộ dữ liệu thành công!');
+      } catch (err) {
+        console.error(err);
+        alert('File dữ liệu JSON không đúng định dạng!');
+      }
+    };
+    reader.readAsText(file);
+  };
+
   // IF NOT AUTHENTICATED -> LOGIN FORM
   if (!isAuthenticated) {
     return (
@@ -344,7 +397,25 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleExportData}
+              className="px-3 py-2 bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-xs font-mono text-purple-300 rounded-xl transition-all flex items-center gap-1.5"
+              title="Xuất file JSON sao lưu tất cả dự án và cài đặt"
+            >
+              <Upload className="w-3.5 h-3.5 rotate-180" />
+              <span>Xuất Dữ Liệu (JSON)</span>
+            </button>
+            <label className="px-3 py-2 bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-xs font-mono text-cyan-300 rounded-xl transition-all cursor-pointer flex items-center gap-1.5">
+              <Upload className="w-3.5 h-3.5" />
+              <span>Nhập Dữ Liệu</span>
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportData}
+                className="hidden"
+              />
+            </label>
             <Link
               href="/"
               className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded-xl transition-all"
