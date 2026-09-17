@@ -399,9 +399,8 @@ export async function saveAllPostsService(posts: Post[]): Promise<Post[]> {
           author: post.author,
           read_time: post.readTime,
           published_at: post.publishedAt,
-          cover_image_url: post.coverImageUrl,
-          tags: post.tags,
-          featured: post.featured
+          cover_image_url: post.imageUrl,
+          tags: post.tags
         });
       }
     } catch (err) {
