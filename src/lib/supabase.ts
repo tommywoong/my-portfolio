@@ -12,12 +12,12 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// Storage Keys - Version 12 for full user dataset & static MP4 videos
+// Storage Keys - Version 15 for 100% 6 static MP4 video assets sync
 const KEYS = {
-  PROJECTS: 'portfolio_tech_projects_v12',
-  POSTS: 'portfolio_tech_posts_v12',
-  SETTINGS: 'portfolio_tech_settings_v12',
-  SKILLS: 'portfolio_tech_skills_v12'
+  PROJECTS: 'portfolio_tech_projects_v15',
+  POSTS: 'portfolio_tech_posts_v15',
+  SETTINGS: 'portfolio_tech_settings_v15',
+  SKILLS: 'portfolio_tech_skills_v15'
 };
 
 // High-Capacity Hybrid Storage Engine: Uses IndexedDB (Unlimited MBs) + localStorage
