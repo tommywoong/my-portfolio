@@ -12,98 +12,22 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// Storage Keys
+// Storage Keys - Version 10 for full user dataset sync
 const KEYS = {
-  PROJECTS: 'portfolio_tech_projects_v4',
-  POSTS: 'portfolio_tech_posts_v4',
-  SETTINGS: 'portfolio_tech_settings_v4',
-  SKILLS: 'portfolio_tech_skills_v4'
+  PROJECTS: 'portfolio_tech_projects_v10',
+  POSTS: 'portfolio_tech_posts_v10',
+  SETTINGS: 'portfolio_tech_settings_v10',
+  SKILLS: 'portfolio_tech_skills_v10'
 };
 
-// High-Capacity Hybrid Storage Engine: Uses IndexedDB (Unlimited MBs) + localStorage (Fallback) + Universal Multi-Version Merger
+// High-Capacity Hybrid Storage Engine: Uses IndexedDB (Unlimited MBs) + localStorage
 async function getStoredData<T>(key: string, initialValue: T): Promise<T> {
   if (typeof window === 'undefined') return initialValue;
 
   try {
-    const baseName = key.replace(/_v\d+$/, '');
-
-    // Priority order: v4 (User's active data) -> v3 -> v2 -> v1 -> base -> v5 (default fallback)
-    const versionKeys = [
-      `${baseName}_v4`,
-      `${baseName}_v3`,
-      `${baseName}_v2`,
-      `${baseName}_v1`,
-      baseName,
-      `${baseName}_v5`
-    ];
-
-    let allVersionsData: any[] = [];
-
-    // Scan across all version keys in IndexedDB and localStorage
-    for (const vKey of versionKeys) {
-      const idbVal = await idbGet<any>(vKey);
-      if (idbVal && Array.isArray(idbVal)) {
-        allVersionsData.push(...idbVal);
-      } else {
-        const lsVal = localStorage.getItem(vKey);
-        if (lsVal) {
-          try {
-            const parsed = JSON.parse(lsVal);
-            if (Array.isArray(parsed)) {
-              allVersionsData.push(...parsed);
-            }
-          } catch {
-            // ignore JSON parse error
-          }
-        }
-      }
-    }
-
-    // Deduplicate items by ID, giving 100% priority to user's v4/v3/v2 edited versions over default v5 mock data
-    if (allVersionsData.length > 0) {
-      const mergedMap = new Map<string, any>();
-
-      for (const item of allVersionsData) {
-        if (!item || !item.id) continue;
-        if (!mergedMap.has(item.id)) {
-          mergedMap.set(item.id, item);
-        } else {
-          // Higher-priority key data (e.g. v4 user edits) overrides lower-priority key data (v5 default mock data)
-          const existing = mergedMap.get(item.id);
-          mergedMap.set(item.id, {
-            ...item,
-            ...existing
-          });
-        }
-      }
-
-      const mergedList = Array.from(mergedMap.values());
-      if (mergedList.length > 0) {
-        await idbSet(key, mergedList as unknown as T);
-        return mergedList as unknown as T;
-      }
-    }
-
-    // Direct read fallback if non-array object (e.g. SiteSettings)
     const directIdb = await idbGet<T>(key);
     if (directIdb !== null && directIdb !== undefined) {
       return directIdb;
-    }
-
-    for (const vKey of versionKeys) {
-      const oldIdb = await idbGet<T>(vKey);
-      if (oldIdb !== null && oldIdb !== undefined) {
-        await idbSet(key, oldIdb);
-        return oldIdb;
-      }
-      const oldLs = localStorage.getItem(vKey);
-      if (oldLs) {
-        try {
-          const parsed = JSON.parse(oldLs);
-          await idbSet(key, parsed);
-          return parsed;
-        } catch {}
-      }
     }
   } catch (err) {
     console.warn('Storage read warning:', err);
