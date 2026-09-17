@@ -14,11 +14,13 @@ import {
   deleteProjectService,
   getPostsService,
   savePostService,
+  saveAllPostsService,
   deletePostService,
   getSiteSettingsService,
   saveSiteSettingsService,
   getSkillCategoriesService,
   saveSkillCategoriesService,
+  saveAllProjectsService,
   isSupabaseConfigured
 } from '@/lib/supabase';
 import {
@@ -308,14 +310,10 @@ export default function AdminPage() {
         const content = event.target?.result as string;
         const data = JSON.parse(content);
         if (data.projects && Array.isArray(data.projects)) {
-          for (const proj of data.projects) {
-            await saveProjectService(proj);
-          }
+          await saveAllProjectsService(data.projects);
         }
         if (data.posts && Array.isArray(data.posts)) {
-          for (const post of data.posts) {
-            await savePostService(post);
-          }
+          await saveAllPostsService(data.posts);
         }
         if (data.siteSettings) {
           await saveSiteSettingsService(data.siteSettings);

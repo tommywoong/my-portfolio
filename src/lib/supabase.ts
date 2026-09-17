@@ -351,6 +351,68 @@ export async function saveProjectService(project: Omit<Project, 'id' | 'createdA
   return fullProject;
 }
 
+export async function saveAllProjectsService(projects: Project[]): Promise<Project[]> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      for (const proj of projects) {
+        await supabase.from('projects').upsert({
+          id: proj.id,
+          title: proj.title,
+          slug: proj.slug,
+          summary: proj.summary,
+          description: proj.description,
+          category: proj.category,
+          tags: proj.tags,
+          image_url: proj.imageUrl,
+          mobile_mockup_url: proj.mobileMockupUrl,
+          mockup_type: proj.mockupType,
+          video_url: proj.videoUrl,
+          gallery_images: proj.galleryImages,
+          demo_url: proj.demoUrl,
+          github_url: proj.githubUrl,
+          featured: proj.featured,
+          completion_date: proj.completionDate,
+          metrics: proj.metrics,
+          architecture_highlights: proj.architectureHighlights
+        });
+      }
+    } catch (err) {
+      console.error('Supabase saveAllProjects error:', err);
+    }
+  }
+
+  await setStoredData(KEYS.PROJECTS, projects);
+  return projects;
+}
+
+export async function saveAllPostsService(posts: Post[]): Promise<Post[]> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      for (const post of posts) {
+        await supabase.from('posts').upsert({
+          id: post.id,
+          title: post.title,
+          slug: post.slug,
+          summary: post.summary,
+          content: post.content,
+          category: post.category,
+          author: post.author,
+          read_time: post.readTime,
+          published_at: post.publishedAt,
+          cover_image_url: post.coverImageUrl,
+          tags: post.tags,
+          featured: post.featured
+        });
+      }
+    } catch (err) {
+      console.error('Supabase saveAllPosts error:', err);
+    }
+  }
+
+  await setStoredData(KEYS.POSTS, posts);
+  return posts;
+}
+
 export async function deleteProjectService(id: string): Promise<boolean> {
   if (isSupabaseConfigured && supabase) {
     try {
